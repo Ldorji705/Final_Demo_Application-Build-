@@ -1,40 +1,54 @@
+// Edit contact screen — update existing contact in AsyncStorage
+
+// Import React and the useState hook
 import React, { useState } from 'react';
+
+// Import UI components from React Native
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  SafeAreaView,
+  View, // layout container
+  Text, // displays text
+  TextInput, // input field
+  TouchableOpacity, // pressable button
+  StyleSheet, // styling helper
+  Alert, // show alerts
+  SafeAreaView, // safe area container
 } from 'react-native';
+
+// AsyncStorage for local persistence
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Component receives route (with contact) and navigation
 export default function EditContactScreen({ route, navigation }) {
+  // Extract contact object from route params
   const { contact } = route.params;
 
+  // Initialize state with existing contact values
   const [name, setName] = useState(contact.name);
   const [phone, setPhone] = useState(contact.phone);
 
+  // Update contact in storage
   async function updateContact() {
+    // Validate inputs
     if (!name.trim() || !phone.trim()) {
       Alert.alert('Missing Info', 'Please enter both name and phone number.');
       return;
     }
 
+    // Load current contacts
     const existing = await AsyncStorage.getItem('contacts');
     const contacts = JSON.parse(existing);
 
+    // Replace the matching contact with updated values
     const updated = contacts.map((c) =>
-      c.id === contact.id
-        ? { ...c, name: name.trim(), phone: phone.trim() }
-        : c
+      c.id === contact.id ? { ...c, name: name.trim(), phone: phone.trim() } : c
     );
 
+    // Save updated list and go back
     await AsyncStorage.setItem('contacts', JSON.stringify(updated));
     navigation.goBack();
   }
 
+  // Render form UI
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.label}>Full Name</Text>
@@ -58,16 +72,14 @@ export default function EditContactScreen({ route, navigation }) {
         <Text style={styles.updateBtnText}>Update Contact</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.cancelBtn}
-        onPress={() => navigation.goBack()}
-      >
+      <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
         <Text style={styles.cancelText}>Cancel</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
+// Styling for the screen
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -1,25 +1,37 @@
+// Home screen — lists contacts from AsyncStorage and allows add/edit/delete
+
+// Import React and hooks
 import React, { useState, useCallback } from 'react';
+
+// Import UI components from React Native
 import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  Alert,
-  StyleSheet,
-  SafeAreaView,
+  View, // layout container
+  Text, // displays text
+  FlatList, // renders scrollable lists
+  TouchableOpacity, // touchable button
+  Alert, // native alert dialogs
+  StyleSheet, // create styles
+  SafeAreaView, // safe area container
 } from 'react-native';
+
+// AsyncStorage for local persistence
 import AsyncStorage from '@react-native-async-storage/async-storage';
+// useFocusEffect to reload when screen gains focus
 import { useFocusEffect } from '@react-navigation/native';
 
+// Exported HomeScreen component receives navigation prop
 export default function HomeScreen({ navigation }) {
+  // State: array of contacts
   const [contacts, setContacts] = useState([]);
 
+  // Reload contacts when this screen is focused
   useFocusEffect(
     useCallback(() => {
       loadContacts();
     }, [])
   );
 
+  // Load contacts from AsyncStorage and set state
   async function loadContacts() {
     const data = await AsyncStorage.getItem('contacts');
     if (data) {
@@ -27,6 +39,7 @@ export default function HomeScreen({ navigation }) {
     }
   }
 
+  // Delete contact by id with confirmation
   async function deleteContact(id) {
     Alert.alert('Delete Contact', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
@@ -34,24 +47,32 @@ export default function HomeScreen({ navigation }) {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
+          // Filter out the deleted contact from state
           const updated = contacts.filter((c) => c.id !== id);
           setContacts(updated);
+          // Persist updated list
           await AsyncStorage.setItem('contacts', JSON.stringify(updated));
         },
       },
     ]);
   }
 
+  // Render a single contact row
   function renderContact({ item }) {
     return (
       <View style={styles.card}>
+        {/* Avatar circle with first initial */}
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{item.name[0].toUpperCase()}</Text>
         </View>
+
+        {/* Contact info: name and phone */}
         <View style={styles.info}>
           <Text style={styles.name}>{item.name}</Text>
           <Text style={styles.phone}>{item.phone}</Text>
         </View>
+
+        {/* Action buttons: Edit and Delete */}
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.editBtn}
@@ -59,6 +80,7 @@ export default function HomeScreen({ navigation }) {
           >
             <Text style={styles.editText}>Edit</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={styles.deleteBtn}
             onPress={() => deleteContact(item.id)}
@@ -70,17 +92,20 @@ export default function HomeScreen({ navigation }) {
     );
   }
 
+  // Main render: list of contacts and add button
   return (
     <SafeAreaView style={styles.container}>
       <FlatList
-        data={contacts}
-        keyExtractor={(item) => item.id}
-        renderItem={renderContact}
+        data={contacts} // data source
+        keyExtractor={(item) => item.id} // unique key
+        renderItem={renderContact} // render function
         ListEmptyComponent={
           <Text style={styles.empty}>No contacts yet. Tap below to add one!</Text>
         }
         contentContainerStyle={{ paddingBottom: 100 }}
       />
+
+      {/* Floating add button navigates to AddContact screen */}
       <TouchableOpacity
         style={styles.addBtn}
         onPress={() => navigation.navigate('AddContact')}
@@ -91,6 +116,7 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
+// Styles for HomeScreen
 const styles = StyleSheet.create({
   container: {
     flex: 1,

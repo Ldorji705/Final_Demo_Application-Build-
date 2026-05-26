@@ -1,42 +1,63 @@
+// Short: AddContact form — saves name and phone to AsyncStorage
+
+// Import React core and hook
 import React, { useState } from 'react';
+
+// Import React Native components
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  SafeAreaView,
+  View, // layout container
+  Text, // text display
+  TextInput, // text input field
+  TouchableOpacity, // touchable button
+  StyleSheet, // style helper
+  Alert, // native alert dialogs
+  SafeAreaView, // safe area aware container
 } from 'react-native';
+
+// Import AsyncStorage for persistent key-value storage
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Exported screen component (receives navigation prop)
 export default function AddContactScreen({ navigation }) {
+  // State: name input value
   const [name, setName] = useState('');
+  // State: phone input value
   const [phone, setPhone] = useState('');
 
+  // Function to validate input and save a new contact
   async function saveContact() {
+    // If either field is empty (after trimming), show alert and stop
     if (!name.trim() || !phone.trim()) {
       Alert.alert('Missing Info', 'Please enter both name and phone number.');
       return;
     }
 
+    // Read stored contacts (JSON string) from AsyncStorage
     const existing = await AsyncStorage.getItem('contacts');
+    // Parse JSON if exists, otherwise start with empty array
     const contacts = existing ? JSON.parse(existing) : [];
 
+    // Build new contact object with a unique id from timestamp
     const newContact = {
       id: Date.now().toString(),
       name: name.trim(),
       phone: phone.trim(),
     };
 
+    // Append the new contact and save updated array back to AsyncStorage
     contacts.push(newContact);
     await AsyncStorage.setItem('contacts', JSON.stringify(contacts));
+
+    // Return to the previous screen
     navigation.goBack();
   }
 
+  // Render UI: inputs and buttons
   return (
     <SafeAreaView style={styles.container}>
+      {/* Label for name input */}
       <Text style={styles.label}>Full Name</Text>
+      {/* Controlled text input for name */}
       <TextInput
         style={styles.input}
         placeholder="e.g. Saroj Sanyasi"
@@ -45,7 +66,9 @@ export default function AddContactScreen({ navigation }) {
         onChangeText={setName}
       />
 
+      {/* Label for phone input */}
       <Text style={styles.label}>Phone Number</Text>
+      {/* Controlled text input for phone */}
       <TextInput
         style={styles.input}
         placeholder="e.g. +975 17 370539"
@@ -55,10 +78,12 @@ export default function AddContactScreen({ navigation }) {
         keyboardType="phone-pad"
       />
 
+      {/* Save button */}
       <TouchableOpacity style={styles.saveBtn} onPress={saveContact}>
         <Text style={styles.saveBtnText}>Save Contact</Text>
       </TouchableOpacity>
 
+      {/* Cancel button */}
       <TouchableOpacity
         style={styles.cancelBtn}
         onPress={() => navigation.goBack()}
@@ -69,6 +94,7 @@ export default function AddContactScreen({ navigation }) {
   );
 }
 
+// Styles for the component
 const styles = StyleSheet.create({
   container: {
     flex: 1,
